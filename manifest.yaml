@@ -1,0 +1,8 @@
+#Path to TLS file 
+#AMQP Server Hostname
+#Tenant Username 
+#Tenant Password 
+#Contianer image URL 
+#Pod Name 
+#Pod Namespace 
+
