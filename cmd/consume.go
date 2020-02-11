@@ -34,7 +34,7 @@ func createTlsConfig(tlsConfig int,tlsPath string) *tls.Config {
 	}
 }
 
-func consume(messageType string, uri string, tenant string,clientUsername string,clientPassword string, tlsPath string,tlsConfig int) error {
+func consume(messageType string, uri string, tenant string,clientUsername string,clientPassword string, tlsConfig int, tlsPath string) error {
 
 	fmt.Printf("Consuming %s from %s ...", messageType, uri)
 	fmt.Println()
@@ -53,7 +53,7 @@ func consume(messageType string, uri string, tenant string,clientUsername string
 
 	client, err := amqp.Dial(uri, opts...)
 	if err != nil {
-		return err
+		log.Fatal("AMQP dial failed to connect to Enmasse: ",err)
 	}
 
 	defer func() {
@@ -106,7 +106,9 @@ func consume(messageType string, uri string, tenant string,clientUsername string
 		if err := msg.Accept(); err != nil {
 			return nil
 		}
+		
+		//Push New Message to Channel 
 		messageChan <- string(msg.GetData())
-		//utils.PrintMessage(msg)
+	
 	}
 }
