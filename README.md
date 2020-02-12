@@ -1,4 +1,8 @@
 # iotContainerSource
-Enmasse(AMQP) Triggered Container Source for a Knative serverless workflow 
+
+The Following Repo is the implementation of a custom Knative Container Source that delivers IOT data Enmasse to any Knative Service or Channel
+
+## Prerequisites
+
 
 STILL IN DEVELOPMENT 
