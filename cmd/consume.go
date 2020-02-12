@@ -13,6 +13,12 @@ import (
 	"io/ioutil"
 )
 
+//createTlsConfig creates the TLS configuration for conection to Enmasse Enpoint 
+//inputs: 
+//		tlsConfig int -> O: No TLS,1: TLS insecure, 2: TLS secure
+//		tlsPath string -> Absolute Path to cert file
+//outputs:
+//		*tls.Config -> tls.Config object pointer with information for AMQP connection  
 func createTlsConfig(tlsConfig int,tlsPath string) *tls.Config {
 	//Insecure TLS 
 	if tlsConfig == 1 {
@@ -34,10 +40,18 @@ func createTlsConfig(tlsConfig int,tlsPath string) *tls.Config {
 	}
 }
 
+//consume listens for new messages from iot devices on the Enmasse Endpoints
+//inputs:
+//		messageType string-> telemetry/event 
+//		uri string-> Enmasse Messaging enpoint URI 
+//		tenant string-> Enmasse Tenant name
+//		clientUsername string-> Hono client Username 
+//		clientPassword string-> Hono client Password 
+// 		tlsConfig int -> O: No TLS,1: TLS insecure, 2: TLS secure
+//		tlsPath string -> Absolute Path to cert file
+//outputs: 
+//		none 
 func consume(messageType string, uri string, tenant string,clientUsername string,clientPassword string, tlsConfig int, tlsPath string) error {
-
-	fmt.Printf("Consuming %s from %s ...", messageType, uri)
-	fmt.Println()
 
 	opts := make([]amqp.ConnOption, 0)
 
@@ -90,10 +104,7 @@ func consume(messageType string, uri string, tenant string,clientUsername string
 		cancel()
 	}()
 
-	fmt.Printf("Consumer running, press Ctrl+C to stop...")
-	fmt.Println()
-
-	// run loop
+	// Inifinite for loop to continually receive messages from Enmasse Devices
 
 	for {
 		// Receive next message
@@ -106,9 +117,9 @@ func consume(messageType string, uri string, tenant string,clientUsername string
 		if err := msg.Accept(); err != nil {
 			return nil
 		}
-		
+
 		//Push New Message to Channel 
-		messageChan <- string(msg.GetData())
-	
+		messageChan <- msg
+		
 	}
 }

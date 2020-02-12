@@ -7,21 +7,17 @@ import (
 	"log"
 	"os"
 	"knative.dev/eventing-contrib/pkg/kncloudevents"
-
+	"pack.ag/amqp"
+	"strings"
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/kelseyhightower/envconfig"
 )
 
-type dataPayload struct {
-	Temp string    `json:"temp"`
-	Scale    string `json:"scale"`
-}
-
 var (
 	eventSource string
 	eventType   string
-	sink        string
-	messageChan chan string = make(chan string) //# of devices Connected to System 
+	sink        string 
+	messageChan chan *amqp.Message = make(chan *amqp.Message) //# of devices Connected to System 
 )
 
 func init() {
@@ -30,17 +26,18 @@ func init() {
 	flag.StringVar(&sink, "sink", "", "the service url to send data to to")
 }
 
+//Struct to hold loaded environment variables from custom .YAML
 type envConfig struct {
-	// Sink URL where to send IOT cloudevents
+	//Sink URL where to send IOT cloudevents
 	Sink string `envconfig:"K_SINK"`
 
-	// Name of this pod.
+	//Name of this pod.
 	Name string `envconfig:"POD_NAME" required:"true"`
 
-	// Namespace this pod exists in.
+	//Namespace this pod exists in.
 	Namespace string `envconfig:"POD_NAMESPACE" required:"true"`
 
-	// Whether to run continuously or exit.
+	//Whether to run continuously or exit.
 	OneShot bool `envconfig:"ONE_SHOT" default:"false"`
 
 	//Enmasse Endpoint configs
@@ -80,9 +77,6 @@ func main() {
 			os.Exit(1)
 	}
 	
-	fmt.Println(env.MessageURI)
-	fmt.Println(env.Name)
-
 	if env.Sink != ""{
 		sink = env.Sink 
 	}else{
@@ -96,43 +90,48 @@ func main() {
 
 	if eventSource == "" {
 		eventSource = fmt.Sprintf("https://github.com/astoycos/iotContanerSource/#%s/%s", env.Namespace, env.Name)
-		log.Printf("IOT data Source: %s", eventSource)
 	}
 
-	dp := &dataPayload{
-		Temp: "",
-		Scale: "Farenheight",
-	}
-
+	//Start Consumer goroutine to listen for new IOT messages at Enmasse Endpoint 
 	go consume(env.MessageType,env.MessageURI,env.MessageTenant,env.ClientUsername,env.ClientPassword,env.TLSConfig,env.TLSPath)
 
 	//Infinite loop that waits for data from edge and then forwards it to knative service 
 	for{
-		fmt.Println("Waiting for iot Device data...")
+		log.Printf("Consuming %s data from enmasse endpoint: %s", env.MessageType, env.MessageURI)	
+		log.Printf("Consumer running, press Ctrl+C to stop...")
+		
 		//Channel to funnel messages from consuming goroutine 
 		msg := <- messageChan	
 		
-		fmt.Println("Device Data received: " + msg)
-		dp.Temp = msg; 
-		fmt.Println("Making cloud Event")
+		log.Printf("Device Data received")
+
+		log.Printf("Making cloudevent")
+		
+		//Make Cloud Event 
+		//TODO: Make into own function 
 		event := cloudevents.NewEvent("1.0")
 		event.SetType(eventType)
 		event.SetSource(eventSource)
-		event.SetDataContentType(cloudevents.ApplicationJSON)
+		event.SetDataContentType(msg.Properties.ContentType)
+		for typemsg, value := range msg.Annotations{
+			event.SetExtension(strings.ToLower(strings.ReplaceAll(typemsg.(string),"_","")), strings.ToLower(strings.ReplaceAll(value.(string),"_","")))
+		}
+		event.SetExtension("MessageType", msg.Properties.ContentType)
+		event.SetDataContentType(msg.Properties.ContentType)
 
-		if err := event.SetData(dp); err != nil {
-			log.Printf("failed to set cloudevents data: %s", err.Error())
+		if err := event.SetData(msg.GetData()); err != nil {
+			log.Printf("Failed to set cloudevents data: %s", err.Error())
 		}
 
-		log.Printf("sending cloudevent to %s", sink)
+		//Send cloud Event
+		log.Printf("Sending cloudevent to %s", sink)
 		if _, _, err := c.Send(context.Background(), event); err != nil {
-			log.Printf("failed to send cloudevent: %s", err.Error())
+			log.Printf("Failed to send cloudevent: %s", err.Error())
 		}
 		
 		//ENV option to only receive once message
 		if env.OneShot {
 			return
 		}	
-
 	}
 }

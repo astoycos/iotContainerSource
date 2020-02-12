@@ -12,6 +12,4 @@ COPY . .
 
 RUN GO111MODULE=on go build -o iot ./cmd 
 
-#EXPOSE 5672 5671 
-
 ENTRYPOINT ["./iot"]
