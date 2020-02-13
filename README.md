@@ -1,6 +1,8 @@
 # iotContainerSource
 
-The Following Repo is the implementation of a custom Knative Container Source that delivers IOT data Enmasse to any Knative Service or Channel
+The Following Repo is the implementation of a custom Knative Container Source that delivers IOT data Enmasse to any Knative Service or Channel. The orginazation of the stack is described by the following diagam 
+
+![stack Diagram](https://raw.githubusercontent.com/astoycos/iotContainerSource/master/docs/iotContainerSource.png)
 
 ## Prerequisites
 
