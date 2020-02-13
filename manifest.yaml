@@ -7,22 +7,24 @@ spec:
     spec:
       containers:
         - image: quay.io/astoycos/iotcontainersource:latest
-          name: heartbeats
+          name: iotcontainersource
           env:
             - name: POD_NAME
-              value: <podname>
+              value: "mypod"
             - name: POD_NAMESPACE
-              value: <namespace>
+              value: "event-test"
             - name: MESSAGE_URI
-              value : <enmasse messaging endpoint>
+              value: "${MESSAGING_HOST}"
+            - name: MESSAGE_PORT
+              value : "${MESSAGING_PORT}"
             - name: MESSAGE_TYPE
               value: <enmasse message type>
             - name: MESSAGE_TENANT
               value: <enmasse message tenant>
             - name: TLS_CONFIG
-              value: <Enmasse tls config> # 0:no tls 1: tls insecue 2: tls secure
+              value: <Enmasse tls config> # 0:no tls 1: tls insecure 2: tls secure
             - name: TLS_PATH
-              value: <absolute path to tls crt>
+              value: "${TLS_CERT}"
             - name: CLIENT_USERNAME
               value: <enmasse client username>
             - name: CLIENT_PASSWORD

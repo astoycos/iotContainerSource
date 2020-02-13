@@ -45,6 +45,9 @@ type envConfig struct {
 	//Messaging endpoing URI  
 	MessageURI string `envconfig:"MESSAGE_URI" required:"true"`
 
+	//Messaging Port
+	MessagePort string `envconfig:"MESSAGE_PORT" required:"true"`
+
 	//Message Type telemetry/event 
 	MessageType string `envconfig:"MESSAGE_TYPE" required:"true"`
 
@@ -55,7 +58,7 @@ type envConfig struct {
 	TLSConfig int `envconfig:"TLS_CONFIG" default:"0"`
 
 	//Path to TLS credentials 
-	TLSPath string `envconfig:"TLS_PATH" default:""`
+	TLSCert string `envconfig:"TLS_CERT" default:""`
 
 	//hono client Username
 	ClientUsername string `envconfig:"CLIENT_USERNAME" default:""`
@@ -79,8 +82,9 @@ func main() {
 	
 	if env.Sink != ""{
 		sink = env.Sink 
+		log.Println("Sink set by ENV")
 	}else{
-		log.Println("Sink not set")
+		log.Println("Sink set by Yaml")
 	}
 
 	c, err := kncloudevents.NewDefaultClient(sink)
@@ -91,9 +95,9 @@ func main() {
 	if eventSource == "" {
 		eventSource = fmt.Sprintf("https://github.com/astoycos/iotContanerSource/#%s/%s", env.Namespace, env.Name)
 	}
-
+	
 	//Start Consumer goroutine to listen for new IOT messages at Enmasse Endpoint 
-	go consume(env.MessageType,env.MessageURI,env.MessageTenant,env.ClientUsername,env.ClientPassword,env.TLSConfig,env.TLSPath)
+	go consume(env.MessageType,env.MessageURI,env.MessagePort,env.MessageTenant,env.ClientUsername,env.ClientPassword,env.TLSConfig,env.TLSCert)
 
 	//Infinite loop that waits for data from edge and then forwards it to knative service 
 	for{

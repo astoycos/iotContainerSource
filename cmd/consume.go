@@ -10,16 +10,15 @@ import (
 
 	"crypto/tls"
 	"crypto/x509"
-	"io/ioutil"
 )
 
 //createTlsConfig creates the TLS configuration for conection to Enmasse Enpoint 
 //inputs: 
 //		tlsConfig int -> O: No TLS,1: TLS insecure, 2: TLS secure
-//		tlsPath string -> Absolute Path to cert file
+//		tlsPath string -> Certificate information
 //outputs:
 //		*tls.Config -> tls.Config object pointer with information for AMQP connection  
-func createTlsConfig(tlsConfig int,tlsPath string) *tls.Config {
+func createTlsConfig(tlsConfig int,tlsCert string) *tls.Config {
 	//Insecure TLS 
 	if tlsConfig == 1 {
 		return &tls.Config{
@@ -27,13 +26,8 @@ func createTlsConfig(tlsConfig int,tlsPath string) *tls.Config {
 		}
 	//Secure TLS
 	} else{
-		caCert, err := ioutil.ReadFile(tlsPath)   	
-			if err != nil {
-				log.Fatal(err)
-			}
 		caCertPool := x509.NewCertPool()
-		caCertPool.AppendCertsFromPEM(caCert)
-	
+		caCertPool.AppendCertsFromPEM([]byte(tlsCert))
 		return &tls.Config{
 			RootCAs: caCertPool,
 		}
@@ -51,20 +45,20 @@ func createTlsConfig(tlsConfig int,tlsPath string) *tls.Config {
 //		tlsPath string -> Absolute Path to cert file
 //outputs: 
 //		none 
-func consume(messageType string, uri string, tenant string,clientUsername string,clientPassword string, tlsConfig int, tlsPath string) error {
+func consume(messageType string, uri string,port string, tenant string,clientUsername string,clientPassword string, tlsConfig int, tlsCert string) error {
 
 	opts := make([]amqp.ConnOption, 0)
 
 	//Enable TLS if required
 	if tlsConfig != 0 {
-		opts = append(opts, amqp.ConnTLSConfig(createTlsConfig(tlsConfig,tlsPath)))
+		opts = append(opts, amqp.ConnTLSConfig(createTlsConfig(tlsConfig,tlsCert)))
 	}
 	
 	//Enable Client credentials if avaliable
 	if(clientUsername != "" && clientPassword !=""){
 		opts = append(opts, amqp.ConnSASLPlain(clientUsername, clientPassword))
 	}
-
+	uri = "amqps://" + uri + ":" + port
 	client, err := amqp.Dial(uri, opts...)
 	if err != nil {
 		log.Fatal("AMQP dial failed to connect to Enmasse: ",err)
