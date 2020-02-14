@@ -176,3 +176,7 @@ Data,
     "temp": 5
   }
 ```
+## Acknowledgments
+
+* Much of the Enmasse consumer Code was borrowed from [@ctron's repo](https://github.com/ctron/hot) I could not have comleted this project without his help
+* etc
