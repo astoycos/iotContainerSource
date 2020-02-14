@@ -1,6 +1,6 @@
 # iotContainerSource
 
-The Following Repo is the implementation of a custom [Knative Container Source]()https://knative.dev/docs/eventing/sources/ that delivers IOT data Enmasse to any Knative Service or Channel in the cloudevent format. The orginazation of the stack is described by the following diagam 
+The Following Repo is the implementation of a custom [Knative Container Source]()https://knative.dev/docs/eventing/sources/ that delivers IOT data Enmasse to any Knative Service or Channel in the cloudevent format. The gernal orginazation of the stack in a real world use case could look like the following 
 
 ![stack Diagram](https://raw.githubusercontent.com/astoycos/iotContainerSource/master/docs/iotContainerSource.png)
 
