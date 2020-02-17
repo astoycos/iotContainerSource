@@ -176,6 +176,9 @@ Data,
     "temp": 5
   }
 ```
+
+If you are having trouble setting up anything along the way feel free to raise an issue and I will do my best to address it :)
+
 ## Acknowledgments
 
 * Much of the Enmasse consumer Code was borrowed from [@ctron's repo](https://github.com/ctron/hot) I could not have comleted this project without his help
