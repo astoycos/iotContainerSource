@@ -181,5 +181,5 @@ If you are having trouble setting up anything along the way feel free to raise a
 
 ## Acknowledgments
 
-* Much of the Enmasse consumer Code was borrowed from [@ctron's repo](https://github.com/ctron/hot) I could not have comleted this project without his help
+* Much of the Enmasse consumer Code was borrowed from [@ctron's repo](https://github.com/ctron/hot) I could not have completed this project without his help
 * etc
